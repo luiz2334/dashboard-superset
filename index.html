@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Superset - Status</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f6f9; text-align: center; padding: 20px; }
+    .status-card { display: inline-block; padding: 10px 20px; border-radius: 20px; color: white; font-weight: bold; margin-bottom: 20px; }
+    .online { background-color: #28a745; }
+    .offline { background-color: #dc3545; }
+    .dashboard-img { max-width: 95%; border: 1px solid #ccc; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+  <h1>Visualização do Dashboard</h1>
+  
+  <div id="status-card" class="status-card offline">Carregando status...</div>
+  
+  <div>
+    <img id="dashboard-image" src="dashboard.png" alt="Última captura do Dashboard" class="dashboard-img">
+  </div>
+
+  <script>
+    async function checarStatus() {
+      try {
+        const response = await fetch('status.json?cache=' + new Date().getTime());
+        const data = await response.json();
+        
+        // Verifica a diferença de tempo do último envio (limite de 5 minutos)
+        const ultimaAtualizacao = new Date(data.timestamp);
+        const agora = new Date();
+        const diferencaMinutos = (agora - ultimaAtualizacao) / 1000 / 60;
+
+        const card = document.getElementById('status-card');
+        if (diferencaMinutos <= 5) {
+          card.innerText = "● ONLINE (Dados Atualizados)";
+          card.className = "status-card online";
+        } else {
+          card.innerText = "● OFFLINE (Exibindo Última Captura)";
+          card.className = "status-card offline";
+        }
+      } catch (err) {
+        document.getElementById('status-card').innerText = "● OFFLINE";
+        document.getElementById('status-card').className = "status-card offline";
+      }
+    }
+
+    // Checa o status a cada 30 segundos
+    checarStatus();
+    setInterval(checarStatus, 30000);
+  </script>
+</body>
+</html>
